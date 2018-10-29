@@ -6,18 +6,17 @@ var app = express();
 
 //cargar middlewares
 app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
-//cargar rutas
-app.post('/', (req, res)=>{
-    console.log(req.body);
-    res.status(200).json({
-        message:'Accion de pruebas en el servidor de NodeJs'
-    })
-})
+//cargando ficheros de rutas
+var userRoutes = require('./routes/userRoutes');
+
+//middleware para definir la ruta base
+app.use('/api', userRoutes);
+
 
 //cors y cabeceras
 
-//rescribir rutas
+//
 
 module.exports = app;
