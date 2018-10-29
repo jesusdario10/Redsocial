@@ -1,0 +1,11 @@
+{
+  "name": "backendred",
+  "version": "1.0.0",
+  "description": "backend de una red social para practicar los conocimientos",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "jdmp",
+  "license": "MIT"
+}
