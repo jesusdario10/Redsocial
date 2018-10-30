@@ -3,6 +3,7 @@
 var UserModel = require('../models/userModel');
 var bcrypt = require('bcrypt-nodejs');
 var jwt = require('../services/jwt');
+var mongossePaginate = require('mongoose-pagination');
 
 //probaremos el home aqui
 function home(req, res){
@@ -73,7 +74,7 @@ function loginUser(req, res){
                 if(check){
                     //generar y devolver el token que contiene el usuario encriptado con el secret
                     if(body.gettoken){
-                        return res.status(200).send({token: jwt.createToken(user)})
+                        return res.status(200).send({token: jwt.createToken(user)})//le paso el usuario que quiero encriptar
                     }else{
                         //devolvemos el usuario normal
                         user.password = undefined;
@@ -93,9 +94,51 @@ function loginUser(req, res){
         }
     });
 }
+//==============================LISTAR UN USUARIO=========================================//
+function getUser(req, res){
+    //el id del usuario me llegara por la URL
+    var userId = req.params.id;
+
+    UserModel.findById(userId, (err, user)=>{
+        if(err) return res.status(500).send({message:"Error en la peticion"});
+        if(!user) return res.status(404).send({message:"usuario no existe"});
+
+        return res.status(200).send({user});
+    })
+}
+//======================LISTAR TODOS LOS USUARIOS PAGINADOS===============================//
+function getUsers(req, res){
+    //aqui recogeremos el id del usuario que esta logueado que se ha decodificado del token
+    //var identity_user_id = req.user.sub; // esta en la propiedad sub porque fue la propiedad que definimos en el jwt
+    //page es el numero de pginas que utilizaremos para mostrar los datos
+    var page = 1;
+    console.log(req.user);
+
+    if(req.params.page){
+        page = req.params.page;
+    }
+    //cantidad de usuarios que se mostraran por pagina
+    var itemsPerPage = 5;
+
+    UserModel.find()
+            .sort('_id')
+            .paginate(page, itemsPerPage, (err, users, total)=>{
+                if(err) return res.status(500).send({message:"Error en la peticion"});
+                if(!users) return res.status(404).send({message:"no existen usuarios"});
+
+                return res.status(200).send({
+                    users,
+                    total,
+                    pages : Math.ceil(total/itemsPerPage)
+                });
+            });   
+}
+
 
 module.exports = {
     home,
     saveUser,
-    loginUser
+    loginUser,
+    getUser,
+    getUsers
 }
