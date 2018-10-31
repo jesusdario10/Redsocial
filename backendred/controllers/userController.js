@@ -1,11 +1,13 @@
 'use strict'
 
 var UserModel = require('../models/userModel');
+var FollowModel = require('../models/followModel');
 var bcrypt = require('bcrypt-nodejs');
 var jwt = require('../services/jwt');
 var mongossePaginate = require('mongoose-pagination');
 var fs = require('fs');
 var path = require('path');
+
 
 //probaremos el home aqui
 function home(req, res){
@@ -96,7 +98,7 @@ function loginUser(req, res){
         }
     });
 }
-//==============================LISTAR UN USUARIO=========================================//
+//============LISTAR UN USUARIO  Y SABER SI ME SIGUE O YO LO SIGO=======//
 function getUser(req, res){
     //el id del usuario me llegara por la URL
     var userId = req.params.id;
@@ -104,9 +106,37 @@ function getUser(req, res){
     UserModel.findById(userId, (err, user)=>{
         if(err) return res.status(500).send({message:"Error en la peticion"});
         if(!user) return res.status(404).send({message:"usuario no existe"});
-
-        return res.status(200).send({user});
-    })
+        user.password = undefined;
+        user.role = undefined;
+        //usando el metodo async-away creado
+        followThisUser(req.user.sub, userId).then((value)=>{
+            return res.status(200).send({
+                user, 
+                following : value.following,
+                followed : value.followed
+            })
+        }); 
+    });
+}
+//=============FUNCION ASINCRONA PARA SABER SI EL USUARIO AL QUE SIGO ME SIGUE A MI=======//
+async function followThisUser(identity_user_id, user_id){
+    /*cuando se ejecute algo esperara a que consiga el resultado para continuar
+      es decir se convertira en un proceso sincrono*/
+      
+      //con following se si  estoy siguiendo a alguien
+    var following = await FollowModel.findOne({'user':identity_user_id, "followed":user_id}, (error, follow)=>{
+                            if(error) return handleError(error);
+                            return follow;
+                        }); 
+      //con followed  se si ese alguien al que estoy siguiendo me sigue
+    var followed = await FollowModel.findOne({'user':user_id, "followed":identity_user_id}, (error, follow)=>{
+                            if(error) return handleError(error);
+                            return followed;
+                        });                  
+      return  {
+         following,
+         followed
+      }                           
 }
 //======================LISTAR TODOS LOS USUARIOS PAGINADOS===============================//
 function getUsers(req, res){

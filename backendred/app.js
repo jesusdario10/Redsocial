@@ -10,9 +10,11 @@ app.use(bodyParser.json());
 
 //cargando ficheros de rutas
 var userRoutes = require('./routes/userRoutes');
+var followRoutes = require('./routes/followRoutes');
 
 //middleware para definir la ruta base
 app.use('/api', userRoutes);
+app.use('/api', followRoutes);
 
 
 //cors y cabeceras
