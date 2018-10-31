@@ -4,6 +4,8 @@ var UserModel = require('../models/userModel');
 var bcrypt = require('bcrypt-nodejs');
 var jwt = require('../services/jwt');
 var mongossePaginate = require('mongoose-pagination');
+var fs = require('fs');
+var path = require('path');
 
 //probaremos el home aqui
 function home(req, res){
@@ -68,7 +70,7 @@ function loginUser(req, res){
     var password = body.password;
 
     UserModel.findOne({email:email}, (err, user)=>{
-        if(err) res.status(500).send({message:"error al gaurdar el usuario"});
+        if(err) res.status(500).send({message:"error al ingresar el usuario"});
         if(user){
             bcrypt.compare(password, user.password, (err, check)=>{
                 if(check){
@@ -134,11 +136,116 @@ function getUsers(req, res){
             });   
 }
 
+//==============Edicion de Datos de usuario=====================//
+function updateUser(req, res){
+    //regoge desde la url el id del usuario que vamos a actualizar
+    var userId = req.params.id;
+    var body = req.body;
+    
+    //borrar la propiedad password usando el metodo delete
+    delete body.password;
+
+    //ahora validemos que solo el mismo usuario pueda actualizar sus datos
+    if(userId != req.user.sub){
+        return res.status(500).send({message:"no tienes permiso para actualiar los datos del usuario"});
+    }
+    /*usamos el findByIdAndUpdate el segundo parametro son los datos a actualizar 
+      el tercer parametro es opcional para que me devuelva los datos del usuario actualizado*/
+    UserModel.findByIdAndUpdate(userId, body, {new:true}, (err, userUpdate)=>{
+        if(err) return res.status(500).send({message:"Error en la peticion"});
+        if(!userUpdate) return res.status(404).send({message:"no se pudo actualizar el usuario"});
+        userUpdate.password = undefined;
+        return res.status(200).send({
+            message:"usuario Actualizado",
+            userUpdate
+        });
+    })
+}
+
+//===============================SUBIR IMAGEN DE AVATAR DE USUARIO===========================//
+function uploadImage(req, res){
+     //regoge desde la url el id del usuario que vamos a actualizar
+     var userId = req.params.id;
+    //ahora validemos que solo el mismo usuario pueda actualizar sus datos
+    if(userId != req.user.sub){
+        return res.status(500).send({message:"no tienes permiso para actualiar los datos del usuario"});
+    }
+    //si existe el componente files dentro del req quiere decir que hay un archivo cargando
+    if(req.files.image != undefined){
+        //el campo que vamos a pasar por post es el campo image
+        var file_path = req.files.image.path;
+        console.log(file_path);
+        //en la variable file_split convertimos tdo el path en un array con el metodo .split
+        var file_split = file_path.split('\\');
+
+        //ahora tomamos la ultima posicionq ue es donde se guardo el nombre de la imagen que ira a uploads/users
+        var file_name = file_split[2];
+
+        //ahora para validar que sea una imagen debo validar su extension 
+        var ext_split = file_name.split('\.')
+        var file_ext = ext_split[1];
+        
+        //si el archivo contiene una extension de tipo de imagen entonces actualiza la imagen del usuario
+        if(file_ext == "png" || file_ext == "jpg" || file_ext == "jpeg" || file_ext == "gif"){
+            
+            //actualicemos la imagen del usuario
+            UserModel.findById(userId, (err, userImage)=>{
+                if(err){
+                    return res.status(400).json({message:"error en la peticion."});
+                }
+                var pathViejo = "./uploads/users/"+userImage.image;
+                // ====en caso de que ya exista una imagen la borramos ===== //
+                if(fs.existsSync(pathViejo)){
+                    fs.unlink(pathViejo)
+                }
+                //guardamos la imagen nueva
+                userImage.image = file_name;
+                userImage.save((err, user)=>{
+                    if(err) return res.status(500).send({message:"Error en la peticion"});
+                    user.password = undefined;
+                    return res.status(200).json({user});
+                })   
+            })
+
+        }else{//sino enviar un mensaje que diga no es un tip de archivo valido
+            removeFieUploads(res, file_path);
+        }
+    }else{
+        return res.status(400).json({message:"No files were uploaded."});
+    }
+}
+
+function removeFieUploads(res, file_path, message){
+    fs.unlink(file_path, (err)=>{//elimina el archivo subido de la ruta
+        return res.status(200).json({message:"Tipo de archivo no valido."});
+    }); 
+}
+
+//==================================Devolver Imagen Al usuario============================//
+function getImageFile(req, res){
+    var image_file = req.params.imageFile;
+    var path_file = './uploads/users/'+image_file;
+
+    fs.exists(path_file, (exists)=>{
+        if(exists){
+            return res.sendFile(path.resolve(path_file))
+        }else{
+            return res.status(200).json({message:"No existe la imagen"});
+        }
+    })
+
+}
+
+
+
 
 module.exports = {
     home,
     saveUser,
     loginUser,
     getUser,
-    getUsers
+    getUsers,
+    updateUser,
+    uploadImage,
+    getImageFile
 }
