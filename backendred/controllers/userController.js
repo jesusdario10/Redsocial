@@ -144,13 +144,14 @@ function getUsers(req, res){
     //var identity_user_id = req.user.sub; // esta en la propiedad sub porque fue la propiedad que definimos en el jwt
     //page es el numero de pginas que utilizaremos para mostrar los datos
     var page = 1;
-    console.log(req.user);
+    //console.log(req.user);
 
     if(req.params.page){
         page = req.params.page;
     }
     //cantidad de usuarios que se mostraran por pagina
     var itemsPerPage = 5;
+    var identity_user_id = req.user.sub;
 
     UserModel.find()
             .sort('_id')
@@ -158,12 +159,50 @@ function getUsers(req, res){
                 if(err) return res.status(500).send({message:"Error en la peticion"});
                 if(!users) return res.status(404).send({message:"no existen usuarios"});
 
-                return res.status(200).send({
-                    users,
-                    total,
-                    pages : Math.ceil(total/itemsPerPage)
+                followUsers(identity_user_id).then((value)=>{
+                    return res.status(200).send({
+                        users,
+                        user_followings : value.followings,
+                        user_follow_me  : value.followeds,
+                        total,
+                        pages : Math.ceil(total/itemsPerPage)
+                    });
                 });
             });   
+}
+//=====FUNCION ASINCRONA PARA SABER A QUIENES SEGUIMOS Y QUIENES NOS SIGUEN===========//
+async function followUsers(user_id){//los campos con 0 no saldra
+
+    try{
+        var followings = await FollowModel.find({"user": user_id}).select({":id":0, '_v':0, 'user':0}).exec()
+          .then((follows)=>{
+              var follows_clean = [];
+              follows.forEach((follow)=>{
+                follows_clean.push(follow.followed);
+              })
+              return follows_clean;
+          }).catch((err)=>{
+                return handleerror(err); 
+              })
+        var followeds = await FollowModel.find({"followed": user_id}).select({":id":0, '_v':0, 'followed':0}).exec()
+          .then((users)=>{
+              var user_clean = [];
+                users.forEach((user)=>{
+                  user_clean.push(user.user);
+              })
+              return user_clean;
+          }).catch((err)=>{
+                return handleerror(err); 
+              })  
+
+    }catch(e){
+      console.log(e);
+    }            
+                   
+    return {
+         followings:followings,
+         followeds:followeds
+    }                                                               
 }
 
 //==============Edicion de Datos de usuario=====================//
@@ -265,6 +304,36 @@ function getImageFile(req, res){
     })
 
 }
+//====================CONTADOR DE USUARIOS QUE NOS SIGUEN Y LOS QUE SEGUIMOS================//
+function getCounters(req, res){
+  var user_id = req.user.sub;
+  if(req.params.id){
+    var user_id = req.params.id;
+  }
+
+  getCountFollow(user_id).then((value)=>{
+    return res.status(200).send({value});
+  })
+  
+}
+
+//Funcion que me cuenta cuantos seguidores tengo y a cuantos sigo==========
+async function getCountFollow(user_id){
+  var following = await FollowModel.count({'user': user_id}, (error, count)=>{
+    if(error) return handleError(err);
+    return count;
+  })
+
+  var followed = await FollowModel.count({"followed":user_id}, (error, count)=>{
+    if(error) return handleError(err);
+    return count;
+  })
+
+  return {
+    followin: following,
+    followed : followed
+  }
+}
 
 
 
@@ -277,5 +346,6 @@ module.exports = {
     getUsers,
     updateUser,
     uploadImage,
-    getImageFile
+    getImageFile,
+    getCounters
 }
