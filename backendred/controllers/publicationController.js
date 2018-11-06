@@ -126,9 +126,6 @@ function uploadImage(req, res){
            
            //solo el dueño de la publicacion puede subir imagenes en ella
            PublicationModel.find({'user':req.user.sub, '_id':publicationId}).exec((error, publication)=>{
-            console.log("aqui viene el decode uy este es el usuario que viene :", req.user.sub);
-            console.log("0000000000000000000");
-            console.log(publication);
                if(publication.length >= 1){
                    
                     //actualicemos el documento de la publicacion
