@@ -92,14 +92,95 @@ function getPublication(req, res){
 function deletePublication(req, res){
     var id_publication = req.params.id;
 
-    PublicationModel.findByIdAndRemove(id_publication, (error, publicationRemove)=>{
-        if(error) return res.status(500).send({message:"error al ejecutar el borrado"});
+    //de esta manera puedo ta,bien eliminar documentos, puedes observar que solo se elimina el documento
+    //de la publicacion si es el usuario que lo creo el que hace la solicitud
+    PublicationModel.remove({'user':req.user.sub, '_id':id_publication}).exec((error, publicationRemove)=>{
+        if(error) return res.status(500).send({message:"error al borrar la publicacion"});
         if(!publicationRemove) return res.status(404).send({message:"no existe la publicacion"});
 
-        return res.status(200).send({
-            publicationRemove: publicationRemove,
-        });
+        res.status(200).send({publication:publicationRemove});
     });
+}
+//===============================SUBIR IMAGEN DE LA PUBLICACION===========================//
+function uploadImage(req, res){
+    //regoge desde la url el id del usuario que vamos a actualizar
+    var publicationId = req.params.id;
+
+   //si existe el componente files dentro del req quiere decir que hay un archivo cargando
+   if(req.files.image != undefined){
+       //el campo que vamos a pasar por post es el campo image
+       var file_path = req.files.image.path;
+       console.log(file_path);
+       //en la variable file_split convertimos tdo el path en un array con el metodo .split
+       var file_split = file_path.split('\\');
+
+       //ahora tomamos la ultima posicionq ue es donde se guardo el nombre de la imagen que ira a uploads/users
+       var file_name = file_split[2];
+
+       //ahora para validar que sea una imagen debo validar su extension 
+       var ext_split = file_name.split('\.')
+       var file_ext = ext_split[1];
+       
+       //si el archivo contiene una extension de tipo de imagen entonces actualiza la imagen del usuario
+       if(file_ext == "png" || file_ext == "jpg" || file_ext == "jpeg" || file_ext == "gif"){
+           
+           //solo el dueño de la publicacion puede subir imagenes en ella
+           PublicationModel.find({'user':req.user.sub, '_id':publicationId}).exec((error, publication)=>{
+            console.log("aqui viene el decode uy este es el usuario que viene :", req.user.sub);
+            console.log("0000000000000000000");
+            console.log(publication);
+               if(publication.length >= 1){
+                   
+                    //actualicemos el documento de la publicacion
+                    PublicationModel.findById(publicationId, (err, publicationImage)=>{
+                        if(err){
+                            return res.status(400).json({message:"error en la peticion."});
+                        }
+                        var pathViejo = "./uploads/publications/"+publicationImage.file;
+                        // ====en caso de que ya exista una imagen la borramos ===== //
+                        if(fs.existsSync(pathViejo)){
+                            fs.unlink(pathViejo)
+                        }
+                        //guardamos la imagen nueva
+                        publicationImage.file = file_name;
+                        publicationImage.save((err, publicationImageSave)=>{
+                            if(err) return res.status(500).send({message:"Error en la peticion"});
+                            return res.status(200).json({publicationImageSave});
+                        })   
+                    })
+               }else{
+                return res.status(404).json({message:"no tienes permiso para subir una imagen a esta publicacion"});
+               }
+           })
+
+
+
+       }else{//sino enviar un mensaje que diga no es un tip de archivo valido
+           removeFieUploads(res, file_path);
+       }
+   }else{
+       return res.status(400).json({message:"No files were uploaded."});
+   }
+}
+
+function removeFieUploads(res, file_path, message){
+   fs.unlink(file_path, (err)=>{//elimina el archivo subido de la ruta
+       return res.status(200).json({message:"Tipo de archivo no valido."});
+   }); 
+}
+//==================================Devolver Imagen de la publicacion ============================//
+function getImageFile(req, res){
+    var image_file = req.params.imageFile;
+    var path_file = './uploads/publications/'+image_file;
+
+    fs.exists(path_file, (exists)=>{
+        if(exists){
+            return res.sendFile(path.resolve(path_file))
+        }else{
+            return res.status(200).json({message:"No existe la imagen"});
+        }
+    })
+
 }
 
 module.exports = {
@@ -107,5 +188,7 @@ module.exports = {
     savePublication,
     getPublications,
     getPublication,
-    deletePublication
+    deletePublication,
+    uploadImage,
+    getImageFile
 }

@@ -1,6 +1,7 @@
 'use strict'
 
 var UserModel = require('../models/userModel');
+var PublicationModel = require('../models/publicationModel');
 var FollowModel = require('../models/followModel');
 var bcrypt = require('bcrypt-nodejs');
 var jwt = require('../services/jwt');
@@ -329,9 +330,16 @@ async function getCountFollow(user_id){
     return count;
   })
 
+  //contemos nuestras publications:
+  var publications = await PublicationModel.count({"user":user_id}, (error, count)=>{
+    if(error) return handleError(err);
+    return count;
+  })
+
   return {
     followin: following,
-    followed : followed
+    followed : followed,
+    publications :publications
   }
 }
 

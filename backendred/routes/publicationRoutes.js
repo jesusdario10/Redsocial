@@ -21,7 +21,14 @@ api.get('/publications/:page?', md_auth.ensureAuth, PublicationController.getPub
 /*getPublicatios -->trae una publicacion por su id */
 api.get('/publication/:id', md_auth.ensureAuth, PublicationController.getPublication);
 
+/*getimagen de la publication*/
+api.get('/get-image-pub/:imageFile', md_auth.ensureAuth, PublicationController.getImageFile );
 
+
+//==========================AQUI VIENEN LOS POST==================================//
+
+/*upload de la imagen de la publication*/
+api.post('/publication-image-pub/:id', [md_auth.ensureAuth, md_upload], PublicationController.uploadImage);
 
 
 //=========================AQUI VAN LOS DELETE====================================//
