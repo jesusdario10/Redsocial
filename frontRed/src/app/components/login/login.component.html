@@ -1,0 +1,26 @@
+<div class="col-lg-5">
+    <h1 class="h1-strong">{{title}}</h1>
+    <div class="alert alert-success" *ngIf="status=='success'">
+      Login Completo
+    </div>
+    <div class="alert alert-danger" *ngIf="status=='error'">
+      Usuario o password erradas
+    </div>
+    <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
+      <p>
+        <label>Correo Electronico</label>       
+        <input type="email" name="email" #email="ngModel" [(ngModel)]="user.email" class="form-control" required  pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$">
+        <span *ngIf="!email.valid && email.touched ">
+            Este campo es obligatiorio o email ingresado es incorrecto
+        </span>
+      </p>
+      <p>
+        <label>Password</label>       
+        <input type="password" name="password" #password="ngModel" [(ngModel)]="user.password" class="form-control" required >
+        <span *ngIf="!password.valid && password.touched ">
+            Este campo es obligatiorio 
+        </span>
+      </p>
+      <input type="submit" value="{{title}}" class="btn btn-success" [disabled]="!loginForm.form.valid">
+    </form>
+</div>    

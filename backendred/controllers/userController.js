@@ -78,7 +78,7 @@ function loginUser(req, res){
             bcrypt.compare(password, user.password, (err, check)=>{
                 if(check){
                     //generar y devolver el token que contiene el usuario encriptado con el secret
-                    if(body.gettoken){
+                    if(body.gettoken=='true'){
                         return res.status(200).send({token: jwt.createToken(user)})//le paso el usuario que quiero encriptar
                     }else{
                         //devolvemos el usuario normal

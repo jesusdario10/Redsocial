@@ -1,0 +1,32 @@
+/*ESTILOS GENERALES*/
+.h1-strong{
+    font-size: 35px;
+    font-weight: bold;
+    margin-left: 13px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+.active{
+    background: #cc1717 !important;
+}
+/*HEADER*/
+.navigation{
+    margin:0px !important;
+    padding: 0px !important;
+    
+}
+.navigation .navbar{
+    border-radius: 0px !important;
+    background:  #e53c37;
+    border:none;
+}
+/*todas las etiquetas que esten dentro de la clase navbar tendran un color blanco*/
+.navigation .navbar *{
+    color:white !important;
+}
+/*todas las etiquetas a que esten dentro del nav cuando se haga hover cambien el background*/
+.navigation .navbar a:hover{
+    background: #cc1717 !important;
+}
+
