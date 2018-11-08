@@ -29,4 +29,20 @@
 .navigation .navbar a:hover{
     background: #cc1717 !important;
 }
+.navigation .navbar .dropdown-menu *{
+    color: black !important;
+}
+.pointer{
+    cursor: pointer;
+}
+/*ESTILOS PARA EL HOME*/
+.jumbotron{
+    padding: 25px !important;
+    border-radius: 5px !important;
+    text-align: center;
+}
+.jumbotron p a {
+    margin: 10px;
+}
+
 

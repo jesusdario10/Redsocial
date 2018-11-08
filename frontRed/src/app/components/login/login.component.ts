@@ -19,7 +19,9 @@ export class LoginComponent implements OnInit {
   token:string;
 
   constructor(
-    private _user : UserServices
+    private _user : UserServices,
+    private _route:ActivatedRoute,
+    private _router : Router
   ) {
     this.title = "Identificate",
     this.user = new UserModel("", "", "", "", "", "", "", "");//8 campos vacios corresponden a las 8n propiedades del modelo
@@ -54,6 +56,7 @@ export class LoginComponent implements OnInit {
         }else{
           this.status = "success";
           localStorage.setItem('token', JSON.stringify(this.token));
+          this._router.navigate(['/home']);
           
         }
         //persistir el token del usuario
@@ -64,6 +67,4 @@ export class LoginComponent implements OnInit {
       }
     )
   }
-
-
 }

@@ -35,7 +35,7 @@ export class UserServices {
     );
   }
   //login
-  singup(user:UserModel, gettoken=null):Observable<any>{
+  singup(user, gettoken=null):Observable<any>{
     if(gettoken !=null){
       user.gettoken = gettoken;
     }

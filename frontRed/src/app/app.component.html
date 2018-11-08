@@ -2,11 +2,11 @@
   <nav class="navbar navbar-default">
     <div class="container-fluid">
       <div class="navbar-header">
-        <a href="#" class="navbar-brand">{{title}}</a>
+        <a [routerLink]="['/home']" [routerLinkActive]="['active']"class="navbar-brand">{{title}}</a>
       </div>
       <ul *ngIf="identity != null" class="nav navbar-nav">
         <li>
-          <a href="#">
+          <a [routerLink]="['/home']" [routerLinkActive]="['active']">
             <span class="glyphicon glyphicon-home"></span>
             Inicio
           </a>
@@ -36,6 +36,27 @@
             <span class="glyphicon glyphicon-user"></span>
             Register
             </a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right" *ngIf="identity != null">
+        <li class="avatar">
+        </li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            {{identity.name}} <span class="caret"></span>
+          </a>  
+          <ul class="dropdown-menu">
+            <li>
+              <a class="pointer"> <span class="glyphicon glyphicon-user"></span> Mi perfil</a>
+            </li>
+            <li>
+              <a class="pointer"><span class="glyphicon glyphicon-cog"></span> Mis datos</a>
+            </li>
+            <li>
+              <a class="pointer" (click)="logout()"><span class="glyphicon glyphicon-log-out pointer"></span> Cerrar Sesion</a>
+            </li>
+          </ul>
+          
         </li>
       </ul>
     </div>
