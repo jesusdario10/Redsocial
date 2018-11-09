@@ -74,5 +74,40 @@ export class UserServices {
     }
     return this.token;
   }
+  /*getCounters es un servicio que me trae todos los contadores del
+   usuario es decir cuantos usuarios lo siguen y a cuantos sigue 
+   este metodo recibira un userId que por defecto vendra a null,
+   devolvera un observable*/
+  getCounters(userId =null){
+    let headers = new HttpHeaders().set('Content-Type', 'application/json')//cuando envie el json a la api lo podra procesar
+                                   .set('Authorization', this.getToken());//aqui le pasamos en token en los headers para que decodifique
+    if(userId != null ){
+      return this._http.get(this.url + 'counters/' + userId, {headers:headers}).pipe(
+        map((resp)=>{
+          console.log(resp);
+          return resp;
+        })
+      );
+    }else{
+      return this._http.get(this.url + 'counters', {headers:headers}).pipe(
+        map((resp:any)=>{
+          console.log(resp);
+          return resp;
+        })
+      );
+    }
+  }
+  /*Actualizar usuario*/
+  updateUser(user:UserModel):Observable<any>{
+    let params = JSON.stringify(user);
+    let headers = new HttpHeaders().set('Content-Type', 'application/json')//cuando envie el json a la api lo podra procesar
+                                    .set('Authorization', this.getToken());//aqui le pasamos en token en los headers para que decodifique
+
+    return this._http.put(this.url+'updateuser/'+user._id, params, {headers:headers}).pipe(
+      map((resp:any)=>{
+        return resp;
+      })
+    )
+  }
 
 }

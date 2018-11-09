@@ -314,7 +314,7 @@ function getCounters(req, res){
 
   getCountFollow(user_id).then((value)=>{
     return res.status(200).send({value});
-  })
+  });
   
 }
 

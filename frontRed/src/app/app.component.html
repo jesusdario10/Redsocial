@@ -50,7 +50,7 @@
               <a class="pointer"> <span class="glyphicon glyphicon-user"></span> Mi perfil</a>
             </li>
             <li>
-              <a class="pointer"><span class="glyphicon glyphicon-cog"></span> Mis datos</a>
+              <a class="pointer"  [routerLink]="['/user-edit']" [routerLinkActive]="['active']"><span class="glyphicon glyphicon-cog"></span> Mis datos</a>
             </li>
             <li>
               <a class="pointer" (click)="logout()"><span class="glyphicon glyphicon-log-out pointer"></span> Cerrar Sesion</a>

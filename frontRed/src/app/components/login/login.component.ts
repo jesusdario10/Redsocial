@@ -35,7 +35,6 @@ export class LoginComponent implements OnInit {
     this._user.singup(this.user).subscribe(
       response=>{
         this.identity = response.user;
-        this.status = "success";
         //persistir datos del usuario
           localStorage.setItem('identity', JSON.stringify(this.identity));
         //conseguir el token
@@ -54,10 +53,8 @@ export class LoginComponent implements OnInit {
         if(this.token.length<=0){
           this.status ='error'
         }else{
-          this.status = "success";
           localStorage.setItem('token', JSON.stringify(this.token));
-          this._router.navigate(['/home']);
-          
+          this.getCounters();
         }
         //persistir el token del usuario
         //conseguir los contadores del usuario es decir seguidos y me siguen
@@ -67,4 +64,17 @@ export class LoginComponent implements OnInit {
       }
     )
   }
+  //obtener las estadisticas de seguidos y seguidores
+  getCounters(){
+    this._user.getCounters()
+      .subscribe((datos:any)=>{
+        //guardemos  storage en el localStorage los following, followed y publications
+        localStorage.setItem('stats', JSON.stringify(datos));
+        this.status = "success";
+        console.log(datos);
+        this._router.navigate(['/home']);
+      })
+  }
+
+  
 }
