@@ -219,10 +219,11 @@ function updateUser(req, res){
     if(userId != req.user.sub){
         return res.status(500).send({message:"no tienes permiso para actualiar los datos del usuario"});
     }
+    
     /*usamos el findByIdAndUpdate el segundo parametro son los datos a actualizar 
       el tercer parametro es opcional para que me devuelva los datos del usuario actualizado*/
     UserModel.findByIdAndUpdate(userId, body, {new:true}, (err, userUpdate)=>{
-        if(err) return res.status(500).send({message:"Error en la peticion"});
+        if(err) return res.status(500).send({message:"El email ya existe"});
         if(!userUpdate) return res.status(404).send({message:"no se pudo actualizar el usuario"});
         userUpdate.password = undefined;
         return res.status(200).send({
@@ -234,28 +235,61 @@ function updateUser(req, res){
 
 //===============================SUBIR IMAGEN DE AVATAR DE USUARIO===========================//
 function uploadImage(req, res){
-     //regoge desde la url el id del usuario que vamos a actualizar
+     //recoge desde la url el id del usuario que vamos a actualizar
      var userId = req.params.id;
-    //ahora validemos que solo el mismo usuario pueda actualizar sus datos
-    if(userId != req.user.sub){
-        return res.status(500).send({message:"no tienes permiso para actualiar los datos del usuario"});
-    }
     //si existe el componente files dentro del req quiere decir que hay un archivo cargando
     if(req.files.image != undefined){
         //el campo que vamos a pasar por post es el campo image
         var file_path = req.files.image.path;
-        console.log(file_path);
+        
         //en la variable file_split convertimos tdo el path en un array con el metodo .split
         var file_split = file_path.split('\\');
-
-        //ahora tomamos la ultima posicionq ue es donde se guardo el nombre de la imagen que ira a uploads/users
+        
+        //ahora tomamos la ultima posicion que es donde se guardo el nombre de la imagen que ira a uploads/users
         var file_name = file_split[2];
-
+        
         //ahora para validar que sea una imagen debo validar su extension 
         var ext_split = file_name.split('\.')
+        console.log(ext_split);
         var file_ext = ext_split[1];
         
-        //si el archivo contiene una extension de tipo de imagen entonces actualiza la imagen del usuario
+        //ahora validemos que solo el mismo usuario pueda actualizar sus datos
+        if(userId != req.user.sub){
+            //esta funcion esta declarada mas abajo y se encarga de borrar ficheros mque no cumplenm la condicion
+            removeFieUploads(res, file_path, "No estas autorizado/a para hacer esto");
+        }else{
+             //si el archivo contiene una extension de tipo de imagen entonces actualiza la imagen del usuario
+            if(file_ext == "png" || file_ext == "jpg" || file_ext == "jpeg" || file_ext == "gif"){
+            //actualicemos la imagen del usuario
+            UserModel.findById(userId, (err, userImage)=>{
+                if(err){
+                    return res.status(400).json({message:"error en la peticion."});
+                }
+                var pathViejo = "./uploads/users/"+userImage.image;
+                // ====en caso de que ya exista una imagen la borramos ===== //
+                if(fs.existsSync(pathViejo)){
+                    fs.unlink(pathViejo, (err)=>{
+                        console.log("imagen antigua borrada");
+                    })
+                }
+                //guardamos la imagen nueva
+                userImage.image = file_name;
+                userImage.save((err, user)=>{
+                    if(err) return res.status(500).send({message:"Error en la peticion"});
+                    user.password = undefined;
+                    return res.status(200).json({user});
+                })   
+            })
+            }else{//extension no valida
+                removeFieUploads(res, file_path, "Tipo de archivo no valido");
+            }
+        }
+
+
+    }else{
+        return res.status(400).json({message:"no se han subido archivos"});
+    }    
+       /* //si el archivo contiene una extension de tipo de imagen entonces actualiza la imagen del usuario
         if(file_ext == "png" || file_ext == "jpg" || file_ext == "jpeg" || file_ext == "gif"){
             
             //actualicemos la imagen del usuario
@@ -282,12 +316,12 @@ function uploadImage(req, res){
         }
     }else{
         return res.status(400).json({message:"No files were uploaded."});
-    }
+    }*/
 }
 
 function removeFieUploads(res, file_path, message){
     fs.unlink(file_path, (err)=>{//elimina el archivo subido de la ruta
-        return res.status(200).json({message:"Tipo de archivo no valido."});
+        return res.status(200).json({message:message});
     }); 
 }
 

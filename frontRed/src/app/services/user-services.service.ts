@@ -102,12 +102,18 @@ export class UserServices {
     let params = JSON.stringify(user);
     let headers = new HttpHeaders().set('Content-Type', 'application/json')//cuando envie el json a la api lo podra procesar
                                     .set('Authorization', this.getToken());//aqui le pasamos en token en los headers para que decodifique
-
     return this._http.put(this.url+'updateuser/'+user._id, params, {headers:headers}).pipe(
       map((resp:any)=>{
         return resp;
+      }),
+      catchError(err=>{
+        console.log(err);
+        swal('!Ya Existe la Cuenta', err.error.message, 'error');
+        return throwError(err) //nos retornra un observable
       })
+     
     )
   }
+  
 
 }

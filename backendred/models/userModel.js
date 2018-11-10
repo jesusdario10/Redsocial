@@ -6,7 +6,7 @@ var UserSchema = Schema({
     name: String,
     surname : String,
     nick : String,
-    email: String,
+    email: {type:String, unique:true, required: [true, "El correo es requerido"]},
     password : String,
     role : String,
     image : String
