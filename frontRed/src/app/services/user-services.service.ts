@@ -114,6 +114,26 @@ export class UserServices {
      
     )
   }
+  /*traer los usuarios paginados */
+  getUsers(page=null){
+    let headers = new HttpHeaders().set('Content-Type', 'application/json')//cuando envie el json a la api lo podra procesar
+                                    .set('Authorization', this.getToken());//aqui le pasamos en token en los headers para que decodifique
+    return this._http.get(this.url+'users/'+page, {headers:headers}).pipe(
+      map((resp:any)=>{
+        return resp;
+      })
+    )                                
+  }
+    /*traer un solo usuario */
+    getUser(id){
+      let headers = new HttpHeaders().set('Content-Type', 'application/json')//cuando envie el json a la api lo podra procesar
+                                      .set('Authorization', this.getToken());//aqui le pasamos en token en los headers para que decodifique
+      return this._http.get(this.url+'users/'+id, {headers:headers}).pipe(
+        map((resp:any)=>{
+          return resp;
+        })
+      )                                
+    }
   
 
 }

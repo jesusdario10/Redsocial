@@ -17,7 +17,7 @@ api.get('/user/:id', md_auth.ensureAuth, userController.getUser);
 //OBTENER TODOS LOS USUARIOS
 api.get('/users/:page?', md_auth.ensureAuth, userController.getUsers);
 //OBTENER LA IMAGEN DE AVATAR DEL USUARIO
-api.get('/get-image-user/:imageFile', md_auth.ensureAuth,  userController.getImageFile);
+api.get('/get-image-user/:imageFile',   userController.getImageFile);
 //OBTENER LOS CONTADORES DE SEGUIDOS Y SEGUIDORES DE UN USUARIO
 api.get('/counters/:id?', md_auth.ensureAuth,  userController.getCounters);
 

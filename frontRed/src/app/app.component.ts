@@ -1,6 +1,7 @@
 import { Component, OnInit, DoCheck } from '@angular/core';
 import {Router, ActivatedRoute, Params } from '@angular/router';
 import { UserServices } from './services/user-services.service';
+import { GLOBAL } from './services/global';
 
 
 @Component({
@@ -11,13 +12,16 @@ import { UserServices } from './services/user-services.service';
 export class AppComponent implements OnInit, DoCheck {
   title = 'NGSOCIAL';
   public identity:any = null;
+  public url : string;
  
 
   constructor(
    private _userService: UserServices,
    private _route:ActivatedRoute,
-   private _router : Router
+   private _router : Router,
+   
   ){
+    this.url = GLOBAL.url;
   }
   ngOnInit(){
     this.identity = this._userService.getIdentity();

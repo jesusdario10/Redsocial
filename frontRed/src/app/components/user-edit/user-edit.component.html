@@ -36,6 +36,9 @@
         El nombre es obligatorio
       </span>
     </p>
+    <div *ngIf="user.image">
+      <img style="height: 50px;" src="{{url + 'get-image-user/' + user.image}}" alt=""/>
+    </div>
     <p>
       <label>Sube tu avatar </label>
       <input type="file"  placeholder="Sube imagen" (change)="fileChangeEvent($event)">

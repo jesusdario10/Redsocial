@@ -50,7 +50,7 @@ export class UserEditComponent implements OnInit, DoCheck {
         this._uploadService.makeFileRequest(this.url+'uploadimage/'+this.user._id, [], this.filesToUpload, this.token, 'image')
                            .then((result:any)=>{
                             console.log(result);
-                            this.user.image = result.image;
+                            this.user.image = result.user.image;
                             localStorage.setItem('identity', JSON.stringify(this.user));
                            });
         this.ngDoCheck();
